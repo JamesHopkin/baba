@@ -21,11 +21,19 @@ app =
 
 
 initialGridStr = """
-i
- e e e e e
-
- e e e e e
-I=YE=P
+ A eeeeeeee
+ = e      e
+ S e i  c e
+   e   C  e
+B=Ke E= c e
+   e _    e
+eeee X &  eeee
+e    AI d    e
+e  M  =  C=P e
+ebba DY    L e
+ebbb   e F=T e
+efbb   e     e
+eeeeeeeeeeeeee
 """
 
 init : ( Model, Cmd BackendMsg )
