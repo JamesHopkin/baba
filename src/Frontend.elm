@@ -68,11 +68,14 @@ init url key =
 update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
 update msg model =
     case msg of
-        MoveYou dir ->
+        BabaMsg (Baba.MoveYou dir) ->
             ( model, Lamdera.sendToBackend (ServerMoveYou dir) )
 
-        SingleKey op ->
+        BabaMsg (Baba.SingleKey op) ->
             ( model, Lamdera.sendToBackend (ServerSingleKey op) )
+
+        BabaMsg _ ->
+            ( model, Cmd.none )
 
         BabaInput gridStr ->
             ( model, Lamdera.sendToBackend (ServerReplaceGrid gridStr) )
@@ -123,28 +126,9 @@ view model =
 
 
 
--- keyboard
-keyDecoder : Decode.Decoder FrontendMsg
-keyDecoder =
-    Decode.map interpretKey (Decode.field "key" Decode.string)
-
-
-interpretKey : String -> FrontendMsg
-interpretKey string =
-    case String.uncons string of
-        Just ( 'w', "" ) -> MoveYou Up
-        Just ( 'd', "" ) -> MoveYou Right
-        Just ( 's', "" ) -> MoveYou Down
-        Just ( 'a', "" ) -> MoveYou Left
-        Just ( 'u', "" ) -> SingleKey Baba.Undo
-        Just ( 'z', "" ) -> SingleKey Baba.Wait
-
-        _ ->
-            SingleKey Baba.Ignore
-
 subscription : Sub FrontendMsg
 subscription = 
     Sub.batch
-        [ Browser.Events.onKeyDown (keyDecoder BabaMsg)
+        [ Browser.Events.onKeyDown (Baba.keyDecoder BabaMsg)
         , Graphics.subscription GraphicsMsg
         ]

@@ -22,8 +22,7 @@ type alias BackendModel =
 type alias SingleKeyOp = Baba.SingleKeyOp
 
 type FrontendMsg
-    = MoveYou Direction
-    | SingleKey SingleKeyOp
+    = BabaMsg Baba.Msg
     | GraphicsMsg Graphics.Msg
     | BabaInput String
 
