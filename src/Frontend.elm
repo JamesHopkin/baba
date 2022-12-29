@@ -6,10 +6,9 @@ import Browser.Navigation as Nav
 import Css
 import Css.Global
 import Html
-import Html.Attributes as Attr
+import Html.Styled.Attributes as Attr exposing ( css, cols, rows,width, height )
 import Html.Styled.Events exposing ( onInput )
-import Html.Styled.Attributes exposing ( css, cols, rows )
-import Html.Styled exposing ( div, textarea, toUnstyled )
+import Html.Styled exposing ( div, pre, text, textarea, toUnstyled )
 import Json.Decode as Decode
 import Lamdera
 import Types exposing (..)
@@ -60,6 +59,7 @@ Working out how Bezique initial message to backend worked:
 init : Url.Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
 init url key =
     ( { graphics = Graphics.init
+      , editorContents = Baba.initialGridStr
       }
     , Lamdera.sendToBackend Join
     )
@@ -91,13 +91,21 @@ update msg model =
 
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
 updateFromBackend msg model =
-    case msg of
+    ( case msg of
         GridState grid ->
-            (   { model
-                | graphics = Graphics.setGrid grid model.graphics
-                }
-            ,   Cmd.none
-            )
+            { model
+            | graphics = Graphics.setGrid grid model.graphics
+            }
+
+        EditorContents gridStr ->
+            { model
+            | editorContents = gridStr
+            }
+
+    , Cmd.none
+    )
+            
+
 
 
 view : Model -> Browser.Document FrontendMsg
@@ -116,7 +124,12 @@ view model =
                 ,   div
                     [   css [ Css.float Css.right, Css.fontFamily Css.monospace ]
                     ]
-                    [   textarea [ rows 20, cols 20, onInput BabaInput ] []
+                    [ textarea
+                        [ rows 20, cols 20, onInput BabaInput ]
+                        []
+                    , pre
+                        [ height 20, width 20 ]
+                        [ text model.editorContents ]
                     ]
                 ]
             |> toUnstyled

@@ -196,13 +196,22 @@ fixedSprites = Dict.fromList
   [ ( 'c', makeFixed 0 128 )
   , ( 'f', makeFixed 24 128 )
   , ( 'd', makeFixed 48 128 )
-  , ( 'b', makeFixed 72 128 )
+
+  , ( 'b'
+    , { url = "images/sprites.png", imageWidth = 256
+      , u = 108, v = 120
+      , xOffset = 4, yOffset = 10
+      , w = 16, h = 16
+      , numFrames = 1
+      }
+    )
+
   , ( 'h', makeFixed 96 128 )
   , ( 'g', makeFixed 120 128 )
   , ( 'e'
     , { url = "images/fences.png", imageWidth = 81
       , u = 74, v = 68
-      , xOffset = 4, yOffset = 8
+      , xOffset = 4, yOffset = 10
       , w = 16, h = 16
       , numFrames = 1
       }

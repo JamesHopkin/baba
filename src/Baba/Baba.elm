@@ -1,7 +1,7 @@
 module Baba.Baba exposing ( Model, Msg(..), init, update, subscription,
                             turn, countChars, replaceGrid, gridFromString,
                             nonGraphicsUpdate, updateGraphics, SingleKeyOp(..),
-                            keyDecoder )
+                            keyDecoder, initialGridStr )
 -- remember to remove exposure of Msg constructors!
 
 import Bitwise

@@ -87,5 +87,8 @@ updateFromFrontend sessionId clientId msg model =
                 grid = Baba.gridFromString gridStr
             in
             ( { model | undoStack = [ grid ] }
-              , Lamdera.broadcast (GridState grid)
+              , Cmd.batch
+                [ Lamdera.broadcast (GridState grid)
+                , Lamdera.broadcast (EditorContents gridStr)
+                ]
             )

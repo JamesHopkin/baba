@@ -229,3 +229,23 @@ overlay targetGrid x y srcGrid =
                 grid
     in
     foldLocations foldFunc targetGrid targetGrid
+
+map : (a -> b) -> LinkedGrid a -> LinkedGrid b
+map f ((LinkedGrid empty width height _) as a) =
+    let
+        foldFunc : Location a -> LinkedGrid b -> LinkedGrid b
+        foldFunc ((Location innerSrcGrid x y) as srcLoc) acc =
+            let 
+                obj = getContents srcLoc
+            in
+                if obj == empty then
+                    acc
+
+                else
+                    at x y acc
+                        |> Maybe.map (\loc -> setContents (f obj) loc)
+                        |> Maybe.map (\(Location g _ _) -> g)
+                        |> Maybe.withDefault acc
+
+    in
+    foldLocations foldFunc (make (f empty) width height) a

@@ -11,6 +11,7 @@ import Baba.LinkedGrid as LinkedGrid exposing ( Direction (..) )
 
 type alias FrontendModel =
     { graphics : Graphics.Model
+    , editorContents : String
     }
 
 
@@ -44,3 +45,4 @@ type BackendMsg
 
 type ToFrontend
     = GridState Cell.Grid
+    | EditorContents String
