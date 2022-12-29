@@ -7,8 +7,9 @@ import Css
 import Css.Global
 import Html
 import Html.Attributes as Attr
-import Html.Styled.Attributes exposing ( css )
-import Html.Styled exposing ( div, toUnstyled )
+import Html.Styled.Events exposing ( onInput )
+import Html.Styled.Attributes exposing ( css, cols, rows )
+import Html.Styled exposing ( div, textarea, toUnstyled )
 import Json.Decode as Decode
 import Lamdera
 import Types exposing (..)
@@ -73,6 +74,9 @@ update msg model =
         SingleKey op ->
             ( model, Lamdera.sendToBackend (ServerSingleKey op) )
 
+        BabaInput gridStr ->
+            ( model, Lamdera.sendToBackend (ServerReplaceGrid gridStr) )
+
         GraphicsMsg graphicsMsg ->
             ( { model | graphics = Graphics.update graphicsMsg model.graphics }
             , Cmd.none
@@ -106,6 +110,11 @@ view model =
                         )
                     ]
                 ,   Graphics.view GraphicsMsg model.graphics
+                ,   div
+                    [   css [ Css.float Css.right, Css.fontFamily Css.monospace ]
+                    ]
+                    [   textarea [ rows 20, cols 20, onInput BabaInput ] []
+                    ]
                 ]
             |> toUnstyled
         ] 
@@ -136,6 +145,6 @@ interpretKey string =
 subscription : Sub FrontendMsg
 subscription = 
     Sub.batch
-        [ Browser.Events.onKeyDown keyDecoder
+        [ Browser.Events.onKeyDown (keyDecoder BabaMsg)
         , Graphics.subscription GraphicsMsg
         ]

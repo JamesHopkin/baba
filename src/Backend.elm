@@ -81,3 +81,11 @@ updateFromFrontend sessionId clientId msg model =
 
         ServerSingleKey op ->
             updateViaBaba (Baba.SingleKey op) model
+
+        ServerReplaceGrid gridStr ->
+            let
+                grid = Baba.gridFromString gridStr
+            in
+            ( { model | undoStack = [ grid ] }
+              , Lamdera.broadcast (GridState grid)
+            )

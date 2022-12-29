@@ -25,6 +25,8 @@ type FrontendMsg
     = MoveYou Direction
     | SingleKey SingleKeyOp
     | GraphicsMsg Graphics.Msg
+    | BabaInput String
+
     -- just latest grid for now
     --| FromServer Cell.Grid
     | Noop
@@ -34,6 +36,7 @@ type ToBackend
     = Join
     | ServerMoveYou Direction
     | ServerSingleKey SingleKeyOp
+    | ServerReplaceGrid String
 
 
 type BackendMsg
