@@ -16,20 +16,21 @@ type alias BackendModel =
     }
 
 
-type alias SingleKeyOp = Evergreen.V1.Baba.Baba.SingleKeyOp
-
-
 type FrontendMsg
-    = MoveYou Evergreen.V1.Baba.LinkedGrid.Direction
-    | SingleKey SingleKeyOp
+    = BabaMsg Evergreen.V1.Baba.Baba.Msg
     | GraphicsMsg Evergreen.V1.Baba.Graphics.Msg
+    | BabaInput String
     | Noop
+
+
+type alias SingleKeyOp = Evergreen.V1.Baba.Baba.SingleKeyOp
 
 
 type ToBackend
     = Join
     | ServerMoveYou Evergreen.V1.Baba.LinkedGrid.Direction
     | ServerSingleKey SingleKeyOp
+    | ServerReplaceGrid String
 
 
 type BackendMsg
