@@ -1,6 +1,7 @@
 module Baba.BabaTest exposing ( Model, Msg, init, update, subscription,
                                 problemGraphEvo, gridToStr,
-                                rulesTestGridDebugStr, rulesTestResult, testResults )
+                                rulesTestGridDebugStr, rulesTestResult, testResults,
+                                testGrids )
 
 import List.Extra
 
@@ -12,9 +13,12 @@ import Baba.Util exposing (..)
 
 import Baba.LinkedGrid as LinkedGrid exposing ( Direction(..) )
 
-import Random
+--import Random
 import Time
 
+{-
+    Should You face direction if trapped?
+-}
 
 allTests = 
         -- pull multiple
@@ -87,6 +91,23 @@ allTests =
         , [ " b←",    " b →" ]
         ], Nothing )
 
+    -- you vs move+push/pull
+    , ( [ [ "→iI=Y",   "→iI=Y" ]
+        , [ "A=M&P",   "A=M&P" ]
+        ], Nothing ) 
+
+    , ( [ [ "→iI=Y",   "→iI=Y" ]
+        , [ "A=M&L",   "A=M&L" ]
+        ], Nothing ) 
+
+    , ( [ [ "→iI=Y",   "→iI=Y" ]
+        , [ "A=M&P",   "A=M&P" ]
+        ], Just Left ) 
+
+    , ( [ [ "→iI=Y",   "→iI=Y" ]
+        , [ "A=M&L",   "A=M&L" ]
+        ], Just Left ) 
+
     , ( [ [ "BA ",    "BA " ]
         , [ "==b",    "==b" ]
         , [ "SM↑",    "SM " ]
@@ -131,7 +152,11 @@ doTest : List Grid -> Maybe Direction -> ( Int, List ( Int, Int ) )
 doTest grids direction = 
     case grids of
         a :: b :: _
-            -> ( 0, mismatch (Maybe.withDefault a (Baba.turn True direction a)) b )
+            -> ( 0, mismatch (
+                Baba.turn direction [a]
+                    |> Maybe.andThen List.head
+                    |> Maybe.withDefault a
+                ) b )
 
         _
             -> ( -1, [] )
@@ -151,7 +176,9 @@ testResults =
                     --let
                     --    dummy = Debug.log "grid" (g |> List.head |> Maybe.andThen (\grid -> Baba.turn Nothing grid) |> Maybe.map gridToStr |> Maybe.withDefault "") 
                     --in
-                    String.join ", " (List.map toStr mismatches)
+                    "\n" ++
+                    (String.join ", " (List.map toStr mismatches))
+                    ++ "\n"
 
         ) testGrids
 
@@ -168,12 +195,12 @@ ruleGridToOverlay = LinkedGrid.fromLists emptyCell 5 5
 
 -- random from seed
 testGrid = 
-        --LinkedGrid.fromLists emptyCell 4 4
-        --  (stringListToCells
-        --    [ "→P"
-        --    , "m=M"
-        --    ]
-        --  )
+        LinkedGrid.fromLists emptyCell 4 4
+          (stringListToCells
+            [ "→P"
+            , "m=M"
+            ]
+          )
 
         --LinkedGrid.fromLists emptyCell 4 4
         --  [ [ []
@@ -181,10 +208,10 @@ testGrid =
         --    , [ ( 2, 'P') ]
         --    ]
         --  ]
-    Random.step generator seed
-        |> Tuple.first
-        |> makeRandomGrid
-        |> (\grid -> LinkedGrid.overlay grid 0 0 ruleGridToOverlay)
+    --Random.step generator seed
+    --    |> Tuple.first
+    --    |> makeRandomGrid
+    --    |> (\grid -> LinkedGrid.overlay grid 0 0 ruleGridToOverlay)
 
     --    withMove = random
     --        |> LinkedGrid.at 3 3
@@ -250,7 +277,7 @@ init msg =
         --        ]
         --    )
         ]
-    , Random.generate (RandomGrid >> msg) generator
+    , Cmd.none -- Random.generate (RandomGrid >> msg) generator
     )
 
 
@@ -323,9 +350,9 @@ type Msg
     = Update Time.Posix
     | RandomGrid (List Char)
 
-seed = Random.initialSeed 1
-generator = 
-    Random.list (randomGridSize * randomGridSize) <| Random.uniform ' ' (String.toList "                    aaaabbbbccd")
+--seed = Random.initialSeed 1
+--generator = 
+--    Random.list (randomGridSize * randomGridSize) <| Random.uniform ' ' (String.toList "                    aaaabbbbccd")
 
 
 update : Msg -> Model -> Model 

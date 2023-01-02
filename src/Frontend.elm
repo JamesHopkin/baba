@@ -58,10 +58,14 @@ Working out how Bezique initial message to backend worked:
 
 init : Url.Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
 init url key =
+    let
+        gameId = url.path
+    in
     ( { graphics = Graphics.init
       , editorContents = Baba.initialGridStr
+      , gameId = gameId
       }
-    , Lamdera.sendToBackend Join
+    , Lamdera.sendToBackend (Join gameId)
     )
 
 
@@ -69,16 +73,16 @@ update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
 update msg model =
     case msg of
         BabaMsg (Baba.MoveYou dir) ->
-            ( model, Lamdera.sendToBackend (ServerMoveYou dir) )
+            ( model, Lamdera.sendToBackend (ServerMoveYou model.gameId dir) )
 
         BabaMsg (Baba.SingleKey op) ->
-            ( model, Lamdera.sendToBackend (ServerSingleKey op) )
+            ( model, Lamdera.sendToBackend (ServerSingleKey model.gameId op) )
 
         BabaMsg _ ->
             ( model, Cmd.none )
 
         BabaInput gridStr ->
-            ( model, Lamdera.sendToBackend (ServerReplaceGrid gridStr) )
+            ( model, Lamdera.sendToBackend (ServerReplaceGrid model.gameId gridStr) )
 
         GraphicsMsg graphicsMsg ->
             ( { model | graphics = Graphics.update graphicsMsg model.graphics }
@@ -92,15 +96,21 @@ update msg model =
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
 updateFromBackend msg model =
     ( case msg of
-        GridState grid ->
-            { model
-            | graphics = Graphics.setGrid grid model.graphics
-            }
+        GridState gameId grid ->
+            if gameId == model.gameId then
+                { model
+                | graphics = Graphics.setGrid grid model.graphics
+                }
+            else
+                model
 
-        EditorContents gridStr ->
-            { model
-            | editorContents = gridStr
-            }
+        EditorContents gameId gridStr ->
+            if gameId == model.gameId then
+                { model
+                | editorContents = gridStr
+                }
+            else
+                model
 
     , Cmd.none
     )

@@ -1,5 +1,6 @@
 module Backend exposing (..)
 
+import Dict
 import Html
 import Lamdera exposing (ClientId, SessionId)
 import Types exposing (..)
@@ -36,9 +37,11 @@ efbb   e     e
 eeeeeeeeeeeeee
 """
 
+fallbackGrid = Baba.gridFromString "i I=Y"
+
 init : ( Model, Cmd BackendMsg )
 init =
-    ( { undoStack = [ Baba.gridFromString initialGridStr ] }
+    ( { games = Dict.empty }
     , Cmd.none
     )
 
@@ -49,46 +52,72 @@ update msg model =
         NoOpBackendMsg ->
             ( model, Cmd.none )
 
-updateViaBaba msg model =
-    let
-        ( debugStr, updatedStack ) = Baba.nonGraphicsUpdate msg model.undoStack
-    in
-    case updatedStack of
-        Just ((grid :: restOfStack) as stack) ->
-            ( { model | undoStack = stack }
-            , Lamdera.broadcast (GridState grid)
-            )
+updateViaBaba : GameId -> Baba.Msg -> BackendModel -> ( BackendModel, Cmd BackendMsg )
+updateViaBaba gameId msg model =
+    case Dict.get gameId model.games of
+        Just undoStack ->
+            let
+                ( debugStr, updatedStack ) = Baba.nonGraphicsUpdate msg undoStack
+            in
+            case updatedStack of
+                Just ((grid :: restOfStack) as stack) ->
+                    ( { model | games = Dict.insert gameId stack model.games }
+                    , broadcast gameId (GridState gameId grid)
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
 
+broadcast : GameId -> ToFrontend -> Cmd BackendMsg
+broadcast _ msg = Lamdera.broadcast msg
+
+
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-        Join ->
+        Join gameId ->
+            case Dict.get gameId model.games of
+                Just undoStack ->
+                    (   model
+                    ,   case List.head undoStack of
+                            Just grid ->
+                                Lamdera.sendToFrontend clientId (GridState gameId grid)
 
-            (   model
-            ,   case List.head model.undoStack of
-                    Just grid ->
-                        Lamdera.sendToFrontend clientId (GridState grid)
+                            _ ->
+                                Cmd.none
+                    )
 
-                    _ ->
-                        Cmd.none
-            )
+                Nothing ->
+                    let
+                        newGrid = Baba.gridFromString initialGridStr
+                    in
+                    (   {   model
+                        |   games = Dict.insert gameId [ newGrid ] model.games
+                        }
+                    ,   Lamdera.sendToFrontend clientId (GridState gameId newGrid)
+                    )
 
-        ServerMoveYou dir ->
-            updateViaBaba (Baba.MoveYou dir) model
+        ServerMoveYou gameId dir ->
+            updateViaBaba gameId (Baba.MoveYou dir) model
 
-        ServerSingleKey op ->
-            updateViaBaba (Baba.SingleKey op) model
+        ServerSingleKey gameId op ->
+            updateViaBaba gameId (Baba.SingleKey op) model
 
-        ServerReplaceGrid gridStr ->
-            let
-                grid = Baba.gridFromString gridStr
-            in
-            ( { model | undoStack = [ grid ] }
-              , Cmd.batch
-                [ Lamdera.broadcast (GridState grid)
-                , Lamdera.broadcast (EditorContents gridStr)
-                ]
-            )
+        ServerReplaceGrid gameId gridStr ->
+            case Dict.get gameId model.games of
+                Just undoStack ->
+                    let
+                        grid = Baba.gridFromString gridStr
+                    in
+                    ( { model | games = Dict.insert gameId [ grid ] model.games }
+                      , Cmd.batch
+                        [ broadcast gameId (GridState gameId grid)
+                        , broadcast gameId (EditorContents gameId gridStr)
+                        ]
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )

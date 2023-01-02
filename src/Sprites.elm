@@ -91,16 +91,18 @@ getDiv instance =
           , Css.backgroundSize (Css.px s.sprite.imageWidth)
           , Css.opacity (Css.num s.alpha)
           , Css.property "image-rendering" "pixelated"
+          , Css.position Css.absolute
+          , Css.property "pointer-events" "none"
           , Css.backgroundPosition2 
             (Css.px (toFloat s.sprite.u - 
               (if s.frameNormal == 1.0 then 0 else
                 toFloat s.sprite.w * floorf (toFloat s.sprite.numFrames * s.frameNormal))))
             (Css.px (toFloat s.sprite.v))
-          , Css.position Css.absolute
           , Css.left (Css.px (s.x + toFloat s.sprite.xOffset))
           , Css.top (Css.px (s.y + toFloat s.sprite.yOffset))
           , Css.width (Css.px (toFloat s.sprite.w))
           , Css.height (Css.px (toFloat s.sprite.h))
+
           ]  
         ]
         []
@@ -109,6 +111,7 @@ getDiv instance =
       div
         [ css
           [ Css.position Css.absolute
+          , Css.property "pointer-events" "none"
           , Css.left (Css.px (t.x + 3))
           , Css.top (Css.px (t.y + 14))
           , Css.fontFamily Css.sansSerif
