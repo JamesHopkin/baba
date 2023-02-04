@@ -219,6 +219,9 @@ fixedSprites = Dict.fromList
       , numFrames = 1
       }
     )
+  , ( 'j', makeFixed 168 128 )
+  , ( 'k', makeFixed 192 128 )
+  , ( 'l', makeFixed 216 128 )
   ]
 
 getAnimatedSprite : Types.Noun -> Maybe (Direction -> Sprite)
